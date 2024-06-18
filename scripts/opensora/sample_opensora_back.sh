@@ -1,8 +1,9 @@
-H=1024
-W=1024
-# H=512
-# W=512
+# H=1024
+# W=1024
+H=512
+W=512
 
+export CUDA_VISIBLE_DEVICES=0
 # inference
 torchrun --standalone --nproc_per_node=1 scripts/opensora/sample_opensora.py \
     --image_size $H $W \
@@ -13,6 +14,8 @@ torchrun --standalone --nproc_per_node=1 scripts/opensora/sample_opensora.py \
     --save_dir ./samples/output \
     --enable_flashattn \
     --enable_t5_speedup
+
+
 
 # recommend setting for speedup
 #   --dtype bf16 \

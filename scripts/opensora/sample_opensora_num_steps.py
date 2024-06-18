@@ -43,16 +43,22 @@ def main(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     dtype = str_to_dtype(args.dtype)
     set_seed(seed=args.seed)
+    # prompts = [
+    #     "The vibrant beauty of a sunflower field. The sunflowers, with their bright yellow petals and dark brown centers, are in full bloom, creating a stunning contrast against the green leaves and stems. The sunflowers are arranged in neat rows, creating a sense of order and symmetry. The sun is shining brightly, casting a warm glow on the flowers and highlighting their intricate details. The video is shot from a low angle, looking up at the sunflowers, which adds a sense of grandeur and awe to the scene. The sunflowers are the main focus of the video, with no other objects or people present. The video is a celebration of nature's beauty and the simple joy of a sunny day in the countryside.",
+    #     "Snow falling over multiple houses and trees on winter landscape against night sky. christmas festivity and celebration concept.",
+    #     "A vibrant underwater scene. A group of blue fish, with yellow fins, are swimming around a coral reef. The coral reef is a mix of brown and green, providing a natural habitat for the fish. The water is a deep blue, indicating a depth of around 30 feet. The fish are swimming in a circular pattern around the coral reef, indicating a sense of motion and activity. The overall scene is a beautiful representation of marine life.",
+    #     "A bustling city street at night, filled with the glow of car headlights and the ambient light of streetlights. The scene is a blur of motion, with cars speeding by and pedestrians navigating the crosswalks. The cityscape is a mix of towering buildings and illuminated signs, creating a vibrant and dynamic atmosphere. The perspective of the video is from a high angle, providing a bird's eye view of the street and its surroundings. The overall style of the video is dynamic and energetic, capturing the essence of urban life at night.",
+    #     "A snowy forest landscape with a dirt road running through it. The road is flanked by trees covered in snow, and the ground is also covered in snow. The sun is shining, creating a bright and serene atmosphere. The road appears to be empty, and there are no people or animals visible in the video. The style of the video is a natural landscape shot, with a focus on the beauty of the snowy forest and the peacefulness of the road.",
+    #     "A serene night scene in a forested area. The first frame shows a tranquil lake reflecting the star-filled sky above. The second frame reveals a beautiful sunset, casting a warm glow over the landscape. The third frame showcases the night sky, filled with stars and a vibrant Milky Way galaxy. The video is a time-lapse, capturing the transition from day to night, with the lake and forest serving as a constant backdrop. The style of the video is naturalistic, emphasizing the beauty of the night sky and the peacefulness of the forest.",
+    # ]
     prompts = [
-        "Time Lapse of the rising sun over a tree in an open rural landscape, with clouds in the blue sky beautifully playing with the rays of light",
-        "The vibrant beauty of a sunflower field. The sunflowers, with their bright yellow petals and dark brown centers, are in full bloom, creating a stunning contrast against the green leaves and stems. The sunflowers are arranged in neat rows, creating a sense of order and symmetry. The sun is shining brightly, casting a warm glow on the flowers and highlighting their intricate details. The video is shot from a low angle, looking up at the sunflowers, which adds a sense of grandeur and awe to the scene. The sunflowers are the main focus of the video, with no other objects or people present. The video is a celebration of nature's beauty and the simple joy of a sunny day in the countryside.",
-        "Snow falling over multiple houses and trees on winter landscape against night sky. christmas festivity and celebration concept.",
-        "A vibrant underwater scene. A group of blue fish, with yellow fins, are swimming around a coral reef. The coral reef is a mix of brown and green, providing a natural habitat for the fish. The water is a deep blue, indicating a depth of around 30 feet. The fish are swimming in a circular pattern around the coral reef, indicating a sense of motion and activity. The overall scene is a beautiful representation of marine life.",
-        "A bustling city street at night, filled with the glow of car headlights and the ambient light of streetlights. The scene is a blur of motion, with cars speeding by and pedestrians navigating the crosswalks. The cityscape is a mix of towering buildings and illuminated signs, creating a vibrant and dynamic atmosphere. The perspective of the video is from a high angle, providing a bird's eye view of the street and its surroundings. The overall style of the video is dynamic and energetic, capturing the essence of urban life at night.",
-        "A snowy forest landscape with a dirt road running through it. The road is flanked by trees covered in snow, and the ground is also covered in snow. The sun is shining, creating a bright and serene atmosphere. The road appears to be empty, and there are no people or animals visible in the video. The style of the video is a natural landscape shot, with a focus on the beauty of the snowy forest and the peacefulness of the road.",
-        "A serene night scene in a forested area. The first frame shows a tranquil lake reflecting the star-filled sky above. The second frame reveals a beautiful sunset, casting a warm glow over the landscape. The third frame showcases the night sky, filled with stars and a vibrant Milky Way galaxy. The video is a time-lapse, capturing the transition from day to night, with the lake and forest serving as a constant backdrop. The style of the video is naturalistic, emphasizing the beauty of the night sky and the peacefulness of the forest.",
+        # "a teddy bear skateboarding under water, highly detailed",
+        # "Iron Man flying in the sky, 4k, high quality",
+        "a cute raccoon playing guitar in the park at sunrise, oil painting style",
+        "a teddy bear reading a book near a small river, oil painting style"
+        "Elon Musk in a space suit standing besides a rocket, high quality",
+        "two teddy bears playing poker under water, highly detailed, oil painting style"
     ]
-
     # ======================================================
     # 3. build model & load weights
     # ======================================================
@@ -89,10 +95,11 @@ def main(args):
     # 3.2. move to device & eval
     vae = vae.to(device, dtype).eval()
     model = model.to(device, dtype).eval()
-
+    # timestep_respacing = [10,10,10,10,10,10,10,5,5,5]
     # 3.3. build scheduler
     scheduler = IDDPM(
         num_sampling_steps=args.scheduler_num_sampling_steps,
+        # timestep_respacing = args.timestep_respacing,
         cfg_scale=args.scheduler_cfg_scale,
         cfg_channel=3,
     )
@@ -159,7 +166,7 @@ def main(args):
             if not use_dist or coordinator.is_master():
                 for idx, sample in enumerate(samples):
                     print(f"Prompt: {batch_prompts_raw[idx]}")
-                    sample_name_suffix = f"_{sample_idx}_{batch_prompts_raw[idx][:30]}"
+                    sample_name_suffix = f"_{sample_idx}_{batch_prompts_raw[idx][:30]}_{args.scheduler_num_sampling_steps}"
                     save_path = os.path.join(save_dir, f"{sample_name}{sample_name_suffix}")
                     save_path = f"{save_path}-{k}"
                     save_sample(sample, fps=args.fps // args.frame_interval, save_path=save_path)
@@ -194,4 +201,5 @@ if __name__ == "__main__":
     parser.add_argument("--enable_t5_speedup", action="store_true", help="Enable t5 speedup")
 
     args = parser.parse_args()
+    
     main(args)

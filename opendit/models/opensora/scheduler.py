@@ -1079,7 +1079,7 @@ class IDDPM(SpacedDiffusion):
         if timestep_respacing is None or timestep_respacing == "":
             timestep_respacing = [diffusion_steps]
         super().__init__(
-            use_timesteps=space_timesteps(diffusion_steps, timestep_respacing),
+            use_timesteps=space_timesteps(diffusion_steps, timestep_respacing), # BUG
             betas=betas,
             model_mean_type=(ModelMeanType.EPSILON if not predict_xstart else ModelMeanType.START_X),
             model_var_type=(

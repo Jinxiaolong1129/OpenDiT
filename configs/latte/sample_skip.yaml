@@ -21,12 +21,11 @@ seed: 0
 run_time: 0
 guidance_scale: 7.5
 sample_method: 'DDIM'
-num_sampling_steps: 50
+# num_sampling_steps: 50
 enable_temporal_attentions: True
 enable_vae_temporal_decoder: True # use temporal vae decoder from SVD, maybe reduce the video flicker (It's not widely tested)
 
 text_prompt: [
-              'Yellow and black tropical fish dart through the sea.',
               'An epic tornado attacking above aglowing city at night.',
               'Slow pan upward of blazing oak fire in an indoor fireplace.',
               'a cat wearing sunglasses and working as a lifeguard at pool.',
@@ -44,3 +43,7 @@ temporal_gap: 6
 cross_skip: True
 cross_threshold: 700
 cross_gap: 8
+
+
+# diffusion step
+# timestep_respacing: [5, 5, 5, 5, 5, 5, 5, 5, 5, 2]

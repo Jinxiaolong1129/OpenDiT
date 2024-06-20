@@ -31,7 +31,7 @@ from diffusers.utils import (
 )
 from diffusers.utils.torch_utils import randn_tensor
 from transformers import T5EncoderModel, T5Tokenizer
-
+from .utlis import space_timesteps
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
 
 if is_bs4_available():
@@ -542,6 +542,7 @@ class LattePipeline(DiffusionPipeline):
         mask_feature: bool = True,
         enable_temporal_attentions: bool = True,
         enable_vae_temporal_decoder: bool = False,
+        timestep_respacing = None
     ) -> Union[VideoPipelineOutput, Tuple]:
         """
         Function invoked when calling the pipeline for generation.
@@ -648,9 +649,23 @@ class LattePipeline(DiffusionPipeline):
             prompt_embeds = torch.cat([negative_prompt_embeds, prompt_embeds], dim=0)
 
         # 4. Prepare timesteps
-        self.scheduler.set_timesteps(num_inference_steps, device=device)
-        timesteps = self.scheduler.timesteps
+        if timestep_respacing is None:
+            print(f'num_inference_steps: {num_inference_steps}')
+            self.scheduler.set_timesteps(num_inference_steps, device=device)
+            # TODO jump steps
+            timesteps = self.scheduler.timesteps
+            print(f'timesteps: {timesteps}')
+            print('============================')
+        else:
+            timesteps = space_timesteps(1000, timestep_respacing)
+            self.scheduler.set_timesteps(num_inference_steps, device=device)
+            origin_t = self.scheduler.timesteps
+            print(f'timesteps: {timesteps}')
+            print('============================')
+            print(f'origin_t: {origin_t}')
+            print('============================')
 
+        
         # 5. Prepare latents.
         latent_channels = self.transformer.config.in_channels
         latents = self.prepare_latents(
@@ -701,7 +716,7 @@ class LattePipeline(DiffusionPipeline):
                 current_timestep = current_timestep.expand(latent_model_input.shape[0])
 
                 # predict noise model_output
-                noise_pred = self.transformer(
+                noise_pred = self.transformer( # BUG 
                     latent_model_input,
                     encoder_hidden_states=prompt_embeds,
                     timestep=current_timestep,

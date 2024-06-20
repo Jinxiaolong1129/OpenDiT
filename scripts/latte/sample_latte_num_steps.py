@@ -171,11 +171,12 @@ def main(args):
         vae=vae, text_encoder=text_encoder, tokenizer=tokenizer, scheduler=scheduler, transformer=transformer_model
     ).to(device)
     
-    timestep_respacing = [int(i) for i in args.timestep_respacing]
-    args.save_img_path = os.path.join(args.save_img_path, f"{args.sample_method}_{timestep_respacing}/")
+    args.save_img_path = os.path.join(args.save_img_path, f"{args.sample_method}_num_steps.{args.num_sampling_steps}/")
     if not os.path.exists(args.save_img_path):
         os.makedirs(args.save_img_path)
-    print(f'timestep_respacing: {timestep_respacing}')
+    
+    print(f'num_steps | {args.num_sampling_steps}')
+    print('=======================')
     print(f"Saving images to {args.save_img_path}")
     print('=======================')
     
@@ -193,7 +194,6 @@ def main(args):
             num_images_per_prompt=1,
             mask_feature=True,
             enable_vae_temporal_decoder=args.enable_vae_temporal_decoder,
-            timestep_respacing = args.timestep_respacing,
         ).video
         if videos.shape[1] == 1:
             save_image(videos[0][0], args.save_img_path + prompt.replace(" ", "_") + ".png")
@@ -238,11 +238,12 @@ if __name__ == "__main__":
     parser.add_argument("--cross_skip", action="store_true", help="Enable cross attention skip")
     parser.add_argument("--cross_threshold", type=int, default=700, help="Cross attention threshold")
     parser.add_argument("--cross_gap", type=int, default=5, help="Cross attention gap")
-    parser.add_argument("--timestep_respacing", type=str, default="10_10_10_10_10_10_10_5_5_5")
     args = parser.parse_args()
-    args.timestep_respacing = [int(x) for x in args.timestep_respacing.split("_")]
 
     config_args = OmegaConf.load(args.config)
+    
     args = merge_args(args, config_args)
+    # args = merge_args(config_args, args)
+
 
     main(args)

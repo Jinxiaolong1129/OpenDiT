@@ -268,7 +268,7 @@ class RFLOW:
                 # spatial
                 spatial_mse = []
                 for (block_idx, current_output), (_, prev_output) in zip(spatial_mlp_outputs, prev_spatial_mlp_outputs):
-                    l2_distance = F.mse_loss(current_output.float(), prev_output.float())
+                    l2_distance = F.mse_loss(current_output.cpu().float(), prev_output.cpu().float())
                     spatial_mse.append((block_idx, l2_distance.item()))
                 all_spatial_mse[int(t[0].to(dtype).item())] = spatial_mse
 
@@ -277,7 +277,7 @@ class RFLOW:
                 for (block_idx, current_output), (_, prev_output) in zip(
                     temporal_mlp_outputs, prev_temporal_mlp_outputs
                 ):
-                    l2_distance = F.mse_loss(current_output.float(), prev_output.float())
+                    l2_distance = F.mse_loss(current_output.cpu().float(), prev_output.cpu().float())
                     temporal_mse.append((block_idx, l2_distance.item()))
                 all_temporal_mse[int(t[0].to(dtype).item())] = temporal_mse
                 print(f"Time step {i}, Spatial MSE: {spatial_mse}, Temporal MSE: {temporal_mse}")

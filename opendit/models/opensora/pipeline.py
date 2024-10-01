@@ -43,7 +43,7 @@ class OpenSoraPABConfig(PABConfig):
         diffusion_skip: bool = False,
         diffusion_timestep_respacing: list = None,
         diffusion_skip_timestep: list = None,
-        mlp_skip: bool = True,
+        mlp_skip: bool = False,
         mlp_spatial_skip_config: dict = {
             676: {"block": [0, 1, 2, 3, 4], "skip_count": 2},
             788: {"block": [0, 1, 2, 3, 4], "skip_count": 2},

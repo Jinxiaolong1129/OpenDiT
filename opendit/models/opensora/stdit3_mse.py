@@ -507,7 +507,7 @@ class STDiT3(PreTrainedModel):
         spatial_mlp_outputs = []
         temporal_mlp_outputs = []
         # === blocks ===
-        for spatial_block, temporal_block in zip(self.spatial_blocks, self.temporal_blocks):
+        for idx, (spatial_block, temporal_block) in enumerate(zip(self.spatial_blocks, self.temporal_blocks)):
             x = auto_grad_checkpoint(
                 spatial_block,
                 x,
@@ -521,8 +521,6 @@ class STDiT3(PreTrainedModel):
                 timestep,
                 all_timesteps=all_timesteps,
             )
-            spatial_mlp_outputs.extend(spatial_block.mlp_outputs)
-            spatial_block.mlp_outputs = []
 
             x = auto_grad_checkpoint(
                 temporal_block,
@@ -537,8 +535,14 @@ class STDiT3(PreTrainedModel):
                 timestep,
                 all_timesteps=all_timesteps,
             )
-            temporal_mlp_outputs.extend(temporal_block.mlp_outputs)
-            temporal_block.mlp_outputs = []
+            if idx <= 1:
+                spatial_mlp_outputs.extend([index, tensor.to("cuda:0")] for index, tensor in spatial_block.mlp_outputs)
+                spatial_block.mlp_outputs = []
+                temporal_mlp_outputs.extend(
+                    [index, tensor.to("cuda:1")] for index, tensor in temporal_block.mlp_outputs
+                )
+                temporal_block.mlp_outputs = []
+                print(f"Block {idx} done")
 
         if enable_sequence_parallel():
             x = rearrange(x, "B (T S) C -> B T S C", T=T, S=S)
